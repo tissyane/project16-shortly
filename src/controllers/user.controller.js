@@ -44,4 +44,15 @@ async function logIn(req, res) {
   }
 }
 
-export { createUser, logIn };
+async function deleteSession(req, res) {
+  const { token } = res.locals.session;
+
+  try {
+    await connection.query("DELETE FROM sessions WHERE token = $1", [token]);
+    res.sendStatus(StatusCodes.OK);
+  } catch (err) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
+  }
+}
+
+export { createUser, logIn, deleteSession };

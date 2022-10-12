@@ -1,13 +1,23 @@
 import express from "express";
-import { createUser, logIn } from "../controllers/user.controller.js";
 import {
-  signInValidation,
-  signUpValidation,
+  createUser,
+  deleteSession,
+  logIn,
+} from "../controllers/user.controller.js";
+import {
+  checkEmail,
+  isLoggedUser,
+  isUser,
 } from "../middlewares/user.middleware.js";
+import {
+  signInSchemaValidation,
+  signUpSchemaValidation,
+} from "../middlewares/userSchemas.middleware.js";
 
 const router = express.Router();
 
-router.post("/signup", signUpValidation, createUser);
-router.post("/signin", signInValidation, logIn);
+router.post("/signup", signUpSchemaValidation, checkEmail, createUser);
+router.post("/signin", signInSchemaValidation, isUser, logIn);
+router.delete("/logout", isLoggedUser, deleteSession);
 
 export default router;
