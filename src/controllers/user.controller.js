@@ -4,8 +4,14 @@ import bcrypt from "bcrypt";
 import { v4 as uuid } from "uuid";
 
 async function createUser(req, res) {
-  const { name, email, password } = req.body;
+  const { name, email, password, confirmPassword } = req.body;
   const encryptedPassword = bcrypt.hashSync(password, 10);
+
+  if (password !== confirmPassword || !confirmPassword) {
+    return res
+      .status(StatusCodes.UNPROCESSABLE_ENTITY)
+      .send({ error: "Please confirm your password" });
+  }
 
   try {
     await connection.query(
