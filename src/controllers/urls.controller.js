@@ -67,4 +67,22 @@ async function openUrl(req, res) {
   }
 }
 
-export { shortenUrl, getUrlbyId, openUrl };
+async function deleteUrl(req, res) {
+  const { url } = res.locals;
+  const { userId } = res.locals.loggedUser;
+
+  if (url.userId !== userId) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .send("You are not allowed to delete this URL");
+  }
+
+  try {
+    await connection.query(`DELETE FROM urls WHERE id = $1;`, [url.id]);
+    res.sendStatus(StatusCodes.NO_CONTENT);
+  } catch (err) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
+  }
+}
+
+export { shortenUrl, getUrlbyId, openUrl, deleteUrl };
