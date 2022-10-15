@@ -8,7 +8,7 @@ async function signUp(req, res) {
   const { name, email, password, confirmPassword } = req.body;
   const encryptedPassword = bcrypt.hashSync(password, 10);
 
-  if (password !== confirmPassword || !confirmPassword) {
+  if (!confirmPassword) {
     return res
       .status(StatusCodes.UNPROCESSABLE_ENTITY)
       .send({ error: "Please confirm your password" });

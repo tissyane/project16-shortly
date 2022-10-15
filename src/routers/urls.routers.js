@@ -1,6 +1,11 @@
 import express from "express";
-import { getUrlbyId, shortenUrl } from "../controllers/urls.controller.js";
+import {
+  getUrlbyId,
+  openUrl,
+  shortenUrl,
+} from "../controllers/urls.controller.js";
 import { validateSchema } from "../middlewares/schema.middleware.js";
+
 import { validateToken } from "../middlewares/user.middleware.js";
 import { urlSchema } from "../schemas/url.schema.js";
 
@@ -13,5 +18,6 @@ router.post(
   shortenUrl
 );
 router.get("/urls/:id", getUrlbyId);
+router.get("/urls/open/:shortUrl", openUrl);
 
 export default router;
