@@ -1,64 +1,52 @@
 import connection from "../database/database.js";
 import { StatusCodes } from "http-status-codes";
-import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
-async function checkEmail(req, res, next) {
-  const { email } = req.body;
-  try {
-    const registeredEmail = (
-      await connection.query("SELECT * FROM users WHERE email = $1", [email])
-    ).rows[0];
-
-    if (registeredEmail) {
-      return res
-        .status(StatusCodes.CONFLICT)
-        .send("This email is already registered");
-    }
-  } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
-  }
-  next();
-}
-
-async function isUser(req, res, next) {
-  const { email, password } = req.body;
-  try {
-    const user = (
-      await connection.query("SELECT * FROM users WHERE email = $1", [email])
-    ).rows[0];
-
-    if (!user) {
-      return res.sendStatus(StatusCodes.UNAUTHORIZED);
-    }
-
-    const checkPassword = bcrypt.compareSync(password, user.password);
-    if (!checkPassword) {
-      return res.sendStatus(StatusCodes.UNAUTHORIZED);
-    }
-    res.locals.user = user;
-  } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
-  }
-
-  next();
-}
-
-async function isLoggedUser(req, res, next) {
+async function validateToken(req, res, next) {
   const token = req.headers.authorization?.replace("Bearer ", "");
+  let userId;
+
   try {
-    const session = (
-      await connection.query("SELECT * FROM sessions WHERE token = $1", [token])
-    ).rows[0];
-
-    if (!session) {
-      return res.sendStatus(StatusCodes.NOT_FOUND);
-    }
-
-    res.locals.session = session;
-    next();
-  } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
+    userId = jwt.verify(token, process.env.TOKEN_SECRET);
+    console.log(userId);
+  } catch (error) {
+    connection.query(`DELETE FROM sessions WHERE token = $1;`, [token]);
+    return res.status(401).send({ error: "User not authorized" });
   }
+
+  res.locals.loggedUser = userId;
+
+  next();
 }
 
-export { checkEmail, isUser, isLoggedUser };
+// async function validateToken(req, res, next) {
+//   const token = req.headers.authorization?.replace("Bearer ", "");
+//   let userId;
+
+//   try {
+//     userId = jwt.verify(token, process.env.TOKEN_SECRET);
+//     console.log(userId);
+//   } catch (error) {
+//     connection.query(`DELETE FROM sessions WHERE token = $1;`, [token]);
+//     return res.status(401).send({ error: "User not authorized" });
+//   }
+
+//   try {
+//     const isTokenValid = (
+//       await connection.query(
+//         `SELECT * FROM sessions WHERE "userId" = $1
+//         AND token = $2;`,
+//         [userId, token]
+//       )
+//     ).rows[0];
+//     if (!isTokenValid) {
+//       return res.status(401).send({ error: "User not authorized" });
+//     }
+//     res.locals.loggedUser = isTokenValid;
+//     return next();
+//   } catch (error) {
+//     return res.status(500).send(error.message);
+//   }
+// }
+
+export { validateToken };

@@ -1,9 +1,10 @@
 import connection from "../database/database.js";
 import { StatusCodes } from "http-status-codes";
 import bcrypt from "bcrypt";
-import { v4 as uuid } from "uuid";
+import jwt from "jsonwebtoken";
+import sanitizer from "../utils/sanitizer.js";
 
-async function createUser(req, res) {
+async function signUp(req, res) {
   const { name, email, password, confirmPassword } = req.body;
   const encryptedPassword = bcrypt.hashSync(password, 10);
 
@@ -16,7 +17,7 @@ async function createUser(req, res) {
   try {
     await connection.query(
       "INSERT INTO users (name, email, password) VALUES ($1, $2, $3);",
-      [name, email, encryptedPassword]
+      [sanitizer(name), email, encryptedPassword]
     );
     res.sendStatus(StatusCodes.CREATED);
   } catch (err) {
@@ -24,7 +25,7 @@ async function createUser(req, res) {
   }
 }
 
-async function logIn(req, res) {
+async function signIn(req, res) {
   const user = res.locals.user;
 
   try {
@@ -37,7 +38,9 @@ async function logIn(req, res) {
     if (checkSession) {
       res.status(StatusCodes.OK).send({ token: checkSession.token });
     } else {
-      const token = uuid();
+      const token = jwt.sign({ userId: user.id }, process.env.TOKEN_SECRET, {
+        expiresIn: process.env.JWT_EXPIRES_IN,
+      });
 
       await connection.query(
         'INSERT INTO sessions ("userId", token) VALUES ($1, $2);',
@@ -51,14 +54,16 @@ async function logIn(req, res) {
 }
 
 async function deleteSession(req, res) {
-  const { token } = res.locals.session;
+  const { userId } = res.locals.loggedUser;
 
   try {
-    await connection.query("DELETE FROM sessions WHERE token = $1", [token]);
+    await connection.query('DELETE FROM sessions WHERE "userId" = $1', [
+      userId,
+    ]);
     res.sendStatus(StatusCodes.OK);
   } catch (err) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
   }
 }
 
-export { createUser, logIn, deleteSession };
+export { signUp, signIn, deleteSession };

@@ -12,4 +12,4 @@ function validateSchema(schema) {
   };
 }
 
-export default validateSchema;
+export { validateSchema };
