@@ -2,10 +2,13 @@ import connection from "../database/database.js";
 import { StatusCodes } from "http-status-codes";
 
 async function validateUrl(req, res, next) {
-  const { id } = req.params;
+  const { id, shortUrl } = req.params;
   try {
     const url = (
-      await connection.query(`SELECT * FROM urls WHERE id = $1;`, [id])
+      await connection.query(
+        `SELECT * FROM urls WHERE id = $1 OR "shortUrl" = $2;`,
+        [id, shortUrl]
+      )
     ).rows[0];
 
     if (!url) {

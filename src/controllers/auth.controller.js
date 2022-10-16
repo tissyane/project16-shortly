@@ -26,7 +26,7 @@ async function signUp(req, res) {
 }
 
 async function signIn(req, res) {
-  const user = res.locals.user;
+  const user = res.locals?.user;
 
   try {
     const checkSession = (
@@ -39,7 +39,7 @@ async function signIn(req, res) {
       res.status(StatusCodes.OK).send({ token: checkSession.token });
     } else {
       const token = jwt.sign({ userId: user.id }, process.env.TOKEN_SECRET, {
-        expiresIn: process.env.JWT_EXPIRES_IN,
+        expiresIn: "2h",
       });
 
       await connection.query(
@@ -54,7 +54,7 @@ async function signIn(req, res) {
 }
 
 async function deleteSession(req, res) {
-  const { userId } = res.locals.loggedUser;
+  const { userId } = res.locals?.loggedUser;
 
   try {
     await connection.query('DELETE FROM sessions WHERE "userId" = $1', [

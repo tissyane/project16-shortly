@@ -4,11 +4,23 @@ import { nanoid } from "nanoid";
 
 async function shortenUrl(req, res) {
   const { url } = req.body;
-  const { userId } = res.locals.loggedUser;
-
+  const { userId } = res.locals?.loggedUser;
   const shortUrl = nanoid(8);
 
   try {
+    const duplicated = (
+      await connection.query(
+        `SELECT * FROM urls WHERE url = $1 AND "userId" = $2;`,
+        [url, userId]
+      )
+    ).rows[0];
+
+    if (duplicated) {
+      return res
+        .status(StatusCodes.CONFLICT)
+        .send("You've shortened this URL before, look into your account ;)");
+    }
+
     await connection.query(
       `INSERT INTO urls ("userId", "shortUrl", url) 
         VALUES ($1, $2, $3);`,
@@ -21,55 +33,32 @@ async function shortenUrl(req, res) {
 }
 
 async function getUrlbyId(req, res) {
-  const { id } = req.params;
+  const url = res.locals?.url;
+  delete url.userId;
+  delete url.visitCount;
+  delete url.createdAt;
 
-  try {
-    const url = (
-      await connection.query(
-        `SELECT id, "shortUrl", url FROM urls WHERE id = $1;`,
-        [id]
-      )
-    ).rows[0];
-
-    if (!url) {
-      return res.sendStatus(StatusCodes.NOT_FOUND);
-    }
-    res.status(StatusCodes.OK).send(url);
-  } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
-  }
+  return res.status(StatusCodes.OK).send(url);
 }
 
 async function openUrl(req, res) {
-  const { shortUrl } = req.params;
+  const url = res.locals?.url;
 
   try {
-    const openUrl = (
-      await connection.query(`SELECT * FROM urls WHERE "shortUrl" = $1;`, [
-        shortUrl,
-      ])
-    ).rows[0];
-
-    if (!openUrl) {
-      return res.sendStatus(StatusCodes.NOT_FOUND);
-    }
-    let visitCount = openUrl.visitCount;
-    visitCount++;
-
     await connection.query(
-      `UPDATE urls SET "visitCount" = $1 WHERE "shortUrl" =  $2;`,
-      [visitCount, shortUrl]
+      `UPDATE urls SET "visitCount" = "visitCount"+1 WHERE "shortUrl" =  $1;`,
+      [url.shortUrl]
     );
 
-    res.redirect(openUrl.url);
+    res.redirect(url.url);
   } catch (err) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
   }
 }
 
 async function deleteUrl(req, res) {
-  const { url } = res.locals;
-  const { userId } = res.locals.loggedUser;
+  const url = res.locals?.url;
+  const { userId } = res.locals?.loggedUser;
 
   if (url.userId !== userId) {
     return res
