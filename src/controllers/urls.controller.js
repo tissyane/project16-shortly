@@ -26,6 +26,16 @@ async function shortenUrl(req, res) {
         VALUES ($1, $2, $3);`,
       [userId, shortUrl, url]
     );
+
+    const urlId = (
+      await connection.query(`SELECT * FROM urls WHERE url = $1;`, [url])
+    ).rows[0];
+
+    await connection.query(
+      `INSERT INTO visits ("urlId") 
+        VALUES ($1);`,
+      [urlId.id]
+    );
     res.status(StatusCodes.CREATED).send({ shortUrl });
   } catch (err) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
@@ -35,7 +45,6 @@ async function shortenUrl(req, res) {
 async function getUrlbyId(req, res) {
   const url = res.locals?.url;
   delete url.userId;
-  delete url.visitCount;
   delete url.createdAt;
 
   return res.status(StatusCodes.OK).send(url);
@@ -46,8 +55,8 @@ async function openUrl(req, res) {
 
   try {
     await connection.query(
-      `UPDATE urls SET "visitCount" = "visitCount"+1 WHERE "shortUrl" =  $1;`,
-      [url.shortUrl]
+      `UPDATE visits SET views = views+1 WHERE "urlId" =  $1;`,
+      [url.id]
     );
 
     res.redirect(url.url);
@@ -67,7 +76,9 @@ async function deleteUrl(req, res) {
   }
 
   try {
+    await connection.query(`DELETE FROM visits WHERE "urlId" = $1;`, [url.id]);
     await connection.query(`DELETE FROM urls WHERE id = $1;`, [url.id]);
+
     res.sendStatus(StatusCodes.NO_CONTENT);
   } catch (err) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);

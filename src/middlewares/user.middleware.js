@@ -18,6 +18,9 @@ async function validateUser(req, res, next) {
       await connection.query(`SELECT * FROM users WHERE id = $1;`, [userId])
     ).rows[0];
     if (!user) {
+      if (req.path === "/users/me") {
+        return res.sendStatus(StatusCodes.NOT_FOUND);
+      }
       return res.sendStatus(StatusCodes.UNAUTHORIZED);
     }
 
