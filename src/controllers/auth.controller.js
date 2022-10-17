@@ -39,7 +39,7 @@ async function signIn(req, res) {
       res.status(StatusCodes.OK).send({ token: checkSession.token });
     } else {
       const token = jwt.sign({ userId: user.id }, process.env.TOKEN_SECRET, {
-        expiresIn: "2h",
+        expiresIn: "1d",
       });
 
       await connection.query(
