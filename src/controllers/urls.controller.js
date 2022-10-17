@@ -38,7 +38,7 @@ async function shortenUrl(req, res) {
     );
     res.status(StatusCodes.CREATED).send({ shortUrl });
   } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
+    res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
@@ -61,7 +61,7 @@ async function openUrl(req, res) {
 
     res.redirect(url.url);
   } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
+    res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
@@ -81,7 +81,7 @@ async function deleteUrl(req, res) {
 
     res.sendStatus(StatusCodes.NO_CONTENT);
   } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
+    res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 

@@ -17,7 +17,7 @@ async function validateUrl(req, res, next) {
     res.locals.url = url;
     return next();
   } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
+    res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 

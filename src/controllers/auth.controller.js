@@ -21,7 +21,7 @@ async function signUp(req, res) {
     );
     res.sendStatus(StatusCodes.CREATED);
   } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
+    res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
@@ -49,7 +49,7 @@ async function signIn(req, res) {
       res.status(StatusCodes.OK).send({ token: token });
     }
   } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
+    res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
@@ -62,7 +62,7 @@ async function deleteSession(req, res) {
     ]);
     res.sendStatus(StatusCodes.OK);
   } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
+    res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 

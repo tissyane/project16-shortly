@@ -15,7 +15,7 @@ async function checkEmail(req, res, next) {
         .send("This email is already registered");
     }
   } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
+    res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
   }
   next();
 }
@@ -33,7 +33,7 @@ async function isUser(req, res, next) {
 
     res.locals.user = user;
   } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
+    res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
   }
 
   next();

@@ -36,7 +36,7 @@ async function validateUser(req, res, next) {
     }
     res.locals.loggedUser = isTokenValid;
   } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
+    res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
   }
 
   next();

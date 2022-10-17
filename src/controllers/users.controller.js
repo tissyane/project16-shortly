@@ -32,7 +32,7 @@ async function getUsersUrls(req, res) {
     ).rows[0];
     return res.status(StatusCodes.OK).send(result);
   } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
+    res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
@@ -50,7 +50,7 @@ async function getRanking(req, res) {
     ).rows;
     return res.status(StatusCodes.OK).send(ranking);
   } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
+    res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
 
