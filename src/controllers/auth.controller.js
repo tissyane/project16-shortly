@@ -36,7 +36,7 @@ async function signIn(req, res) {
     ).rows[0];
 
     if (checkSession) {
-      res.status(StatusCodes.OK).send({ token: checkSession.token });
+      return res.status(StatusCodes.OK).send({ token: checkSession.token });
     } else {
       const token = jwt.sign({ userId: user.id }, process.env.TOKEN_SECRET, {
         expiresIn: "1d",
